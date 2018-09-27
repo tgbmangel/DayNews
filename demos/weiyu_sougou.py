@@ -21,7 +21,7 @@ headers={
 
 sougouwenzhang_url='http://weixin.sogou.com/weixin?type=2&s_from=input&query=9%E6%9C%8825%E6%97%A5%E5%BE%AE%E8%AF%AD%E7%AE%80%E6%8A%A5&ie=utf8&_sug_=n&_sug_type_='
 sougouwenzhang_url='http://weixin.sogou.com/weixin?type=2&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
-key_word=u'9月25日微语简报'
+key_word=u'9月26日微语简报'
 # weiyu_url='https://mp.weixin.qq.com/s?src=11&timestamp=1537855092&ver=1143&signature=miLp2ckIcr3jJv*MiObvddzHzK9rw*MkENvUEUb4BFcx1aNnpjC8xjbqwqTGqLHSqWXYfHcNhAHUMeSaReeRTOc-m3h-7DFoqFPs-I9U26kWCY-cjHwPewspiLWrBoJ5&new=1'
 s=HTMLSession()
 r=s.get(sougouwenzhang_url.format(key_word))
