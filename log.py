@@ -7,7 +7,7 @@
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(level = logging.INFO)
-handler = logging.FileHandler("log.txt",encoding='utf-8')
+handler = logging.FileHandler("news.log",encoding='utf-8')
 formatter = logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s - %(message)s')
 handler.setLevel(logging.INFO)
 handler.setFormatter(formatter)
