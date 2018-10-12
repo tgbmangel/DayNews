@@ -6,6 +6,7 @@
 # @Software: PyCharm
 import datetime
 from requests_html import HTMLSession
+from log import logger
 
 def get_weiyu_news_today():
     headers = {
@@ -23,23 +24,28 @@ def get_weiyu_news_today():
     sougouwenzhang_url = 'http://weixin.sogou.com/weixin?type=2&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
     s = HTMLSession()
     print(sougouwenzhang_url.format(keyword))
+    logger.info(sougouwenzhang_url.format(keyword))
     r = s.get(sougouwenzhang_url.format(keyword))
     htmls = r.html
     divs = htmls.find('div.txt-box')
     for div in divs:
         u, author = list(div.find('h3')[0].links)[0], div.find('div > a')[0].text
         print(u,author)
+        logger.info(f'{u},{author}')
         if author == '微语简报':
             # print('zhaodao')
             rr=s.get(u)
             # print(rr.html.html)
             try:
-                news_text=rr.html.find('#js_content')[0].text
+                # text_area=rr.html.find('#js_content')[0]
+                news_text=rr.html.find('#js_content > section')[-1].text
                 # '#js_content > section:nth-child(5) > p:nth-child(2)'
                 print('获取到：',news_text)
+                logger.info(news_text)
                 s.close()
                 return news_text
             except Exception as e:
+                logger.info(e)
                 pass
     s.close()
 
