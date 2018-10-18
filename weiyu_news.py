@@ -7,6 +7,7 @@
 import datetime
 from requests_html import HTMLSession
 from log import logger
+import time
 
 def get_weiyu_news_today():
     headers = {
@@ -17,10 +18,13 @@ def get_weiyu_news_today():
 
     day=datetime.datetime.now().day
     month=datetime.datetime.now().month
+    year=datetime.datetime.now().year
     week=datetime.date.weekday(datetime.datetime.now())
+    today_str=f'{year}-{month}-{day}'
     # print(month,day,week)
     week_map={0:'一',1:'二',2:'三',3:'四',4:'五',5:'六',6:'天'}
-    keyword=f'{month}月{day}日 微语简报 星期{week_map[week]} 微语简报'
+    week_str=f'星期{week_map[week]}'
+    keyword=f'{month}月{day}日 微语简报 '
     sougouwenzhang_url = 'http://weixin.sogou.com/weixin?type=2&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
     s = HTMLSession()
     print(sougouwenzhang_url.format(keyword))
@@ -29,10 +33,12 @@ def get_weiyu_news_today():
     htmls = r.html
     divs = htmls.find('div.txt-box')
     for div in divs:
-        u, author = list(div.find('h3')[0].links)[0], div.find('div > a')[0].text
-        print(u,author)
-        logger.info(f'{u},{author}')
-        if author == '微语简报':
+        u, author,time_str = list(div.find('h3')[0].links)[0], div.find('div > a')[0].text,div.find('div > span')[0].text
+        time_get=datetime.datetime.fromtimestamp(int(time_str.split('\'')[1]))
+        print(u,author,time_get)
+        time_get_date=f'{time_get.year}-{time_get.month}-{time_get.day}'
+        logger.info(f'{u},{author}{time_get.year,time_get.month,time_get.day}')
+        if author == '微语简报'and today_str==time_get_date:
             # print('zhaodao')
             rr=s.get(u)
             # print(rr.html.html)

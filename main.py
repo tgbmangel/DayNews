@@ -65,6 +65,8 @@ def send_message_chatroom_news(chat_room):
     if qun_user_name:
         logger.info(qun_user_name)
         message = get_weiyu_news_today()
+        if not message:
+            message='新闻又炸了！'
         logger.info(message)
         itchat.send(message,toUserName=get_chatroom_username(chat_room))
     else:
@@ -128,9 +130,13 @@ if __name__=='__main__':
     itchat.auto_login(hotReload=True)
     schedule.every().day.at("7:00").do(send_message_chatroom_news,'经济研讨')
     schedule.every().day.at("9:40").do(send_message_chatroom_news,'上山打老虎')
-    schedule.every().day.at("9:40").do(send_message_chatroom_news,'上山打老虎')
-    schedule.every().day.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
-    schedule.every().saturday.at("8:00").do(send_message_chatroom_para,'经济研讨','群提醒，鸡哥定制：单反中的照片。')
+    schedule.every().monday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    schedule.every().tuesday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    schedule.every().wednesday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    schedule.every().thursday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    schedule.every().friday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    schedule.every().saturday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    # schedule.every().saturday.at("8:00").do(send_message_chatroom_para,'经济研讨','[群提醒]鸡哥定制：单反中的照片。')
     t=threading.Thread(target=schedule_send)
     t.start()
     try:
