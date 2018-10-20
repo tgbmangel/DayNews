@@ -137,7 +137,7 @@ if __name__=='__main__':
     schedule.every().wednesday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
     schedule.every().thursday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
     schedule.every().friday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
-    schedule.every().saturday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
+    schedule.every().saturday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：周六加班的大佬可以下班了！')
     # schedule.every().saturday.at("8:00").do(send_message_chatroom_para,'经济研讨','[群提醒]鸡哥定制：单反中的照片。')
     t=threading.Thread(target=schedule_send)
     t.start()

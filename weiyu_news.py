@@ -24,7 +24,7 @@ def get_weiyu_news_today():
     # print(month,day,week)
     week_map={0:'一',1:'二',2:'三',3:'四',4:'五',5:'六',6:'天'}
     week_str=f'星期{week_map[week]}'
-    keyword=f'{month}月{day}日 微语简报 '
+    keyword=f'{month}月{day}日 {week_str} 微语简报 '
     sougouwenzhang_url = 'http://weixin.sogou.com/weixin?type=2&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
     s = HTMLSession()
     print(sougouwenzhang_url.format(keyword))
