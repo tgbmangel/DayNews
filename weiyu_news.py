@@ -72,7 +72,7 @@ def get_lottery():
         result=d.get('result')
         strs += f"第{result.get('lottery_no')}期 "
         strs+=f"{result.get('lottery_name')}\n"
-        strs +=f"开奖号码：{result.get('lottery_res')}\n"
+        strs +=f"开奖号码：↓↓\n【{result.get('lottery_res')}】\n"
         strs +=f"开奖日期：{result.get('lottery_date')}\n"
         strs +=f"兑奖过期日期：{result.get('lottery_exdate')}\n"
         strs +=f"本期销量：{result.get('lottery_sale_amount')}\n"
@@ -81,9 +81,45 @@ def get_lottery():
         strs+='==========\n'
         if prize:
             for pr in prize:
-                strs+=f"{pr.get('prize_name')},中奖注数:{pr.get('prize_num')},单注金额:{pr.get('prize_amount')},中奖规则:{pr.get('prize_require')}\n"
+                strs+=f"{pr.get('prize_name')}{pr.get('prize_num')}注,单注:{pr.get('prize_amount')}元\n"
+                pass
     return strs
 
 
+def get_exp(com,no):
+    exp_map={
+        "顺丰":"sf",
+        "申通":"sto",
+        "圆通":"yt",
+        "韵达":"yd",
+        "天天":"tt",
+        "EMS":"ems",
+        "中通":"zto",
+        "汇通":"ht",
+    }
+    com_cod=exp_map.get(com)
+    if com_cod:
+        api_url='http://v.juhe.cn/exp/index'
+        p={
+            'key':'58873cd58e4995104fcf3e402a141100',
+            'com':com_cod,
+            'no':no
+        }
+
+        strs=''
+        a=requests.post(api_url,p)
+        r=a.json()
+        # strs+=f"{r.get('reason')}:\n"
+        result=r.get('result')
+        strs+=f'{result.get("company")} '
+        strs +=f'{result.get("no")}\n'
+        print(f'{result.get("status")}')
+        exp_info=result.get('list')
+        for _exp_info in exp_info:
+            strs +=f"{_exp_info.get('datetime')},{_exp_info.get('remark')}\n"
+        return strs
+    else:
+        return '未识别到快递公司，可能暂时不支持，也可能名称不匹配。'
+
 if __name__=='__main__':
-    get_weiyu_news_today()
+    print(get_exp("韵达",'3833224842423'))
