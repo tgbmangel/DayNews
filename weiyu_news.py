@@ -8,6 +8,7 @@ import datetime
 from requests_html import HTMLSession
 from log import logger
 import time
+import requests
 
 def get_weiyu_news_today():
     headers = {
@@ -15,7 +16,6 @@ def get_weiyu_news_today():
         'Refer':'http://weixin.sogou.com/weixin?type=2&query=9%E6%9C%8827%E6%97%A5%E5%BE%AE%E8%AF%AD%E7%AE%80%E6%8A%A5+%E6%98%9F%E6%9C%9F%E5%9B%9B&ie=utf8&s_from=input&_sug_=n&_sug_type_=1&w=01015002&oq=&ri=11&sourceid=sugg&sut=0&sst0=1538010259311&lkt=0%2C0%2C0&p=40040108',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
     }
-
     day=datetime.datetime.now().day
     month=datetime.datetime.now().month
     year=datetime.datetime.now().year
@@ -31,9 +31,11 @@ def get_weiyu_news_today():
     logger.info(sougouwenzhang_url.format(keyword))
     r = s.get(sougouwenzhang_url.format(keyword))
     htmls = r.html
+    # print(htmls.html)
     divs = htmls.find('div.txt-box')
     for div in divs:
         u, author,time_str = list(div.find('h3')[0].links)[0], div.find('div > a')[0].text,div.find('div > span')[0].text
+        print(time_str)
         time_get=datetime.datetime.fromtimestamp(int(time_str.split('\'')[1]))
         print(u,author,time_get)
         time_get_date=f'{time_get.year}-{time_get.month}-{time_get.day}'
@@ -54,6 +56,34 @@ def get_weiyu_news_today():
                 logger.info(e)
                 pass
     s.close()
+
+def get_lottery():
+    api_url = 'http://apis.juhe.cn/lottery/query'
+    data = {
+        'key': 'd7ce4c0b11f2a0d48a309df093d23412',
+        'lottery_id': 'ssq'
+    }
+    a = requests.post(api_url, data)
+    d=a.json()
+    print(d)
+    print(type(d))
+    strs=''
+    if d.get('reason')=='查询成功':
+        result=d.get('result')
+        strs += f"第{result.get('lottery_no')}期 "
+        strs+=f"{result.get('lottery_name')}\n"
+        strs +=f"开奖号码：{result.get('lottery_res')}\n"
+        strs +=f"开奖日期：{result.get('lottery_date')}\n"
+        strs +=f"兑奖过期日期：{result.get('lottery_exdate')}\n"
+        strs +=f"本期销量：{result.get('lottery_sale_amount')}\n"
+        strs +=f"奖池滚存：{result.get('lottery_pool_amount')}\n"
+        prize=result.get('lottery_prize') #list
+        strs+='==========\n'
+        if prize:
+            for pr in prize:
+                strs+=f"{pr.get('prize_name')},中奖注数:{pr.get('prize_num')},单注金额:{pr.get('prize_amount')},中奖规则:{pr.get('prize_require')}\n"
+    return strs
+
 
 if __name__=='__main__':
     get_weiyu_news_today()
