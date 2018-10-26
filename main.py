@@ -123,11 +123,12 @@ def send_message_chatroom_para(chat_room,message):
     else:
         logger.info(f'未获取到群username:{chat_room}')
 
-news_keywords=['新闻呢','新闻呢？','新闻']
-lottery_keywords={'彩票':'ssq','双色球':'ssq','大乐透':'dlt'}
-exp_keywords='查快递'
+
 @yun.msg_register([TEXT,SHARING,CARD],isGroupChat=True)
 def print_msg(msg):
+    news_keywords = ['新闻呢', '新闻呢？', '新闻']
+    lottery_keywords = {'彩票': 'ssq', '双色球': 'ssq', '大乐透': 'dlt'}
+    exp_keywords = '查快递'
     try:
         logger.info(unicode_nickname(msg['User']['NickName']))
     except Exception as e:
