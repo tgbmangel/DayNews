@@ -10,7 +10,7 @@ from main import yun
 from log import logger
 import threading
 #TODO 解决多文件调用关系(目前调用main.py里面的都没有用上)
-
+#完成push
 if __name__=="__main__":
     yun.auto_login(hotReload=True)
     #新闻
