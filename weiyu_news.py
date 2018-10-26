@@ -57,11 +57,11 @@ def get_weiyu_news_today():
                 pass
     s.close()
 
-def get_lottery():
+def get_lottery(lottery_id):
     api_url = 'http://apis.juhe.cn/lottery/query'
     data = {
         'key': 'd7ce4c0b11f2a0d48a309df093d23412',
-        'lottery_id': 'ssq'
+        'lottery_id': lottery_id
     }
     a = requests.post(api_url, data)
     d=a.json()
@@ -78,10 +78,10 @@ def get_lottery():
         strs +=f"本期销量：{result.get('lottery_sale_amount')}\n"
         strs +=f"奖池滚存：{result.get('lottery_pool_amount')}\n"
         prize=result.get('lottery_prize') #list
-        strs+='==========\n'
+        # strs+='==========\n'
         if prize:
             for pr in prize:
-                strs+=f"{pr.get('prize_name')}{pr.get('prize_num')}注,单注:{pr.get('prize_amount')}元\n"
+                # strs+=f"{pr.get('prize_name')}{pr.get('prize_num')}注,单注:{pr.get('prize_amount')}元\n"
                 pass
     return strs
 

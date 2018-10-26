@@ -8,11 +8,11 @@
 import time
 import schedule
 import itchat
-import threading
 from itchat.content import *
 from weiyu_news import *
 from log import logger
 import re
+from daydayup import *
 
 yun=itchat.new_instance()
 def get_chatroom_username(room_name):
@@ -72,9 +72,9 @@ def send_message_chatroom_news(chat_room):
         logger.info(message)
         yun.send(message,toUserName=get_chatroom_username(chat_room))
     else:
-        logger.info('未获取到群username')
+        logger.info(f'未获取到群username:{chat_room}')
 
-def send_message_chatroom_lottery(chat_room):
+def send_message_chatroom_lottery(chat_room,lottery_id):
     '''
     定时任务
     '''
@@ -82,13 +82,13 @@ def send_message_chatroom_lottery(chat_room):
     qun_user_name=get_chatroom_username(chat_room)
     if qun_user_name:
         logger.info(qun_user_name)
-        message = get_lottery()
+        message = get_lottery(lottery_id)
         if not message:
             message='彩票又炸了！'
         logger.info(message)
         yun.send(message,toUserName=get_chatroom_username(chat_room))
     else:
-        logger.info('未获取到群username')
+        logger.info(f'未获取到群username:{chat_room}')
 
 def send_message_chatroom_exp(chat_room,new_type,*para):
     '''
@@ -106,8 +106,7 @@ def send_message_chatroom_exp(chat_room,new_type,*para):
             logger.info(message)
             yun.send(message,toUserName=get_chatroom_username(chat_room))
     else:
-        logger.info('未获取到群username')
-
+        logger.info(f'未获取到群username:{chat_room}')
 
 def send_message_chatroom_para(chat_room,message):
     '''
@@ -122,10 +121,10 @@ def send_message_chatroom_para(chat_room,message):
         logger.info(message_send)
         yun.send(message_send,toUserName=get_chatroom_username(chat_room))
     else:
-        logger.info('未获取到群username')
+        logger.info(f'未获取到群username:{chat_room}')
 
 news_keywords=['新闻呢','新闻呢？','新闻']
-lottery_keywords=['彩票','双色球']
+lottery_keywords={'彩票':'ssq','双色球':'ssq','大乐透':'dlt'}
 exp_keywords='查快递'
 @yun.msg_register([TEXT,SHARING,CARD],isGroupChat=True)
 def print_msg(msg):
@@ -148,9 +147,9 @@ def print_msg(msg):
         else:
             msg.user.send('新闻又炸了。')
             logger.info('新闻又炸了。')
-    elif msg.text in lottery_keywords:
+    elif msg.text in list(lottery_keywords.keys()):
         logger.info(f'收到指令：{msg.text}')
-        lottery=get_lottery()
+        lottery=get_lottery(lottery_keywords[msg.text])
         if lottery:
             msg.user.send(lottery)
         else:
@@ -176,31 +175,3 @@ def print_msg(msg):
         logger.info('49 get')
         logger.info(type(msg['Content']))
         # itchat.send_raw_msg(msg['MsgType'], msg['Content'],'filehelper')
-
-def schedule_send():
-    logger.info('start time:{}'.format(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())))
-    while True:
-        schedule.run_pending()
-        logger.info('schedule_send...{}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())))
-        time.sleep(28)
-
-if __name__=='__main__':
-    yun.auto_login(hotReload=True)
-    schedule.every().day.at("7:00").do(send_message_chatroom_news,'经济研讨')
-    schedule.every().day.at("9:40").do(send_message_chatroom_news,'上山打老虎')
-    schedule.every().monday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
-    schedule.every().tuesday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
-    schedule.every().tuesday.at("21:59").do(send_message_chatroom_lottery,'经济研讨')
-    schedule.every().wednesday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
-    schedule.every().thursday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬已经下班咯。')
-    schedule.every().thursday.at("21:59").do(send_message_chatroom_lottery,'经济研讨')
-    schedule.every().friday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：准备下班咯！有的大佬开启周末假期咯。')
-    schedule.every().saturday.at("18:00").do(send_message_chatroom_para,'经济研讨','群提醒：周六加班的大佬可以下班了！')
-    schedule.every().sunday.at("21:59").do(send_message_chatroom_lottery, '经济研讨')
-    # schedule.every().saturday.at("8:00").do(send_message_chatroom_para,'经济研讨','[群提醒]鸡哥定制：单反中的照片。')
-    t=threading.Thread(target=schedule_send)
-    t.start()
-    try:
-        yun.run()
-    except Exception as e:
-        logger.info(e)
