@@ -58,11 +58,11 @@ def get_weiyu_news_today():
                 pass
     s.close()
 
-
-
 def weiyu_news_p_account():
     '''
-    #公众号搜索结果url
+    #在微信搜索使用搜索公众号，获取公众号列表，然后找到 微语简报 的公众号
+    进入公众号页面，获取文章列表，然后找到对应日期（当天的）文章地址
+    进入当天文章，获取文章text
     :return: 文章内容
     '''
     url='http://weixin.sogou.com/weixin?type=1&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
@@ -76,7 +76,6 @@ def weiyu_news_p_account():
     # print(month,day,week)
     week_map = {0: '一', 1: '二', 2: '三', 3: '四', 4: '五', 5: '六', 6: '天'}
     week_str = f'星期{week_map[week]}'
-
     se=HTMLSession()
     rsp=se.get(url.format(key_word))
     logger.info(url.format(key_word))
@@ -161,8 +160,13 @@ def get_lottery(lottery_id):
                 pass
     return strs
 
-
 def get_exp(com,no):
+    '''
+
+    :param com:
+    :param no:
+    :return:
+    '''
     exp_map={
         "顺丰":"sf",
         "申通":"sto",

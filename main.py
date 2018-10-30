@@ -31,7 +31,7 @@ def send_message_chatroom_news(chat_room):
     qun_user_name=get_chatroom_username(chat_room)
     if qun_user_name:
         logger.info(qun_user_name)
-        message = weiyu_news_p_account()
+        message = weiyu_news_p_account() if weiyu_news_p_account() else get_weiyu_news_today()
         if not message:
             message='新闻又炸了！'
         logger.info(message)
@@ -107,7 +107,7 @@ def print_msg(msg):
     # logger.info(msg.text)
     if msg.text in news_keywords:
         logger.info('收到指令')
-        news=weiyu_news_p_account()
+        news=weiyu_news_p_account() if weiyu_news_p_account() else get_weiyu_news_today()
         if news:
             msg.user.send(news)
         else:
