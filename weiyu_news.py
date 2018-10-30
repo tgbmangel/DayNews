@@ -9,6 +9,7 @@ from requests_html import HTMLSession
 from log import logger
 import time
 import requests
+import re
 
 def get_weiyu_news_today():
     headers = {
@@ -56,6 +57,81 @@ def get_weiyu_news_today():
                 logger.info(e)
                 pass
     s.close()
+
+
+
+def weiyu_news_p_account():
+    '''
+    #公众号搜索结果url
+    :return: 文章内容
+    '''
+    url='http://weixin.sogou.com/weixin?type=1&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
+    key_word='微语简报'
+    #日期
+    day = datetime.datetime.now().day
+    month = datetime.datetime.now().month
+    year = datetime.datetime.now().year
+    week = datetime.date.weekday(datetime.datetime.now())
+    today_str = f'{year}-{month}-{day}'
+    # print(month,day,week)
+    week_map = {0: '一', 1: '二', 2: '三', 3: '四', 4: '五', 5: '六', 6: '天'}
+    week_str = f'星期{week_map[week]}'
+
+    se=HTMLSession()
+    rsp=se.get(url.format(key_word))
+    logger.info(url.format(key_word))
+    #搜索公账号的结果div，包括所有结果
+    div=rsp.html.find('#main > div.news-box')[0]
+    lis=div.find('ul > li')
+    for li in lis:
+        links=li.links
+        #微信号
+        logger.info(li.find('p.info')[0].text)
+        if li.find('p.info')[0].text=='微信号：weiyunews':
+            for link in links:
+                if link.startswith('http://mp.weixin.qq.com/profile?src=3'):
+                    #公众号链接
+                    logger.info(link)
+                    #请求公众号页面，进入到公众号所有文章的页面。
+                    rp=se.get(link)
+                    htmls=rp.html.html#文章html
+                    # print(htmls)
+                    #获取msgList,在解析每篇文章的信息
+                    msg_list_patten=re.compile('var msgList = ({.+})')
+                    msg_list=re.findall(msg_list_patten,htmls)[0]
+                    msg_list=eval(msg_list)
+                    for x in msg_list.get('list'):
+                        # print('↓↓↓'*8)
+                        # print(x)
+                        #先获取文章的通用信息，通过时间来判断是不是今天的文章
+                        comm_msg_info=x.get('comm_msg_info')
+                        date_time=comm_msg_info.get('datetime')
+                        time_get = datetime.datetime.fromtimestamp(int(date_time))
+                        time_get_date = f'{time_get.year}-{time_get.month}-{time_get.day}'
+                        if time_get_date==today_str:
+                            app_msg_ext_info = x.get('app_msg_ext_info')  # 文章的url、标题等，dict
+                            url_head='http://mp.weixin.qq.com'
+                            wenzhang_url=app_msg_ext_info.get('content_url')
+                            wenzhang_title=app_msg_ext_info.get('title')
+                            if not wenzhang_url:
+                                wenzhang_url=app_msg_ext_info.get('multi_app_msg_item_list')[0].get('content_url')
+                                wenzhang_title=app_msg_ext_info.get('multi_app_msg_item_list')[0].get('title')
+                            else:
+                                wenzhang_url=url_head+wenzhang_url
+                            print(wenzhang_url.replace('amp;',''),wenzhang_title,time_get_date)
+                            logger.info(wenzhang_url.replace('amp;', '')+wenzhang_title+time_get_date)
+                            if '微语简报' in wenzhang_title:
+                                # return wenzhang_url.replace('amp;',''),wenzhang_title,time_get_date
+                                try:
+                                    rp=se.get(wenzhang_url.replace('amp;',''))
+                                    news_text = rp.html.find('#js_content > section')[-1].text
+                                    print('获取到：', news_text)
+                                    logger.info(news_text)
+                                    se.close()
+                                    return news_text
+                                except Exception as e:
+                                    logger.info(e)
+                                    pass
 
 def get_lottery(lottery_id):
     api_url = 'http://apis.juhe.cn/lottery/query'

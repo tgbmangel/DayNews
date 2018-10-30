@@ -13,6 +13,7 @@ from weiyu_news import *
 from log import logger
 import re
 from daydayup import *
+from emoji_evil import unicode_nickname
 
 yun=itchat.new_instance()
 def get_chatroom_username(room_name):
@@ -22,42 +23,6 @@ def get_chatroom_username(room_name):
     except Exception as e:
         return
 
-def unicode_nickname(input_string):
-    '''
-    处理特殊表情或者字符的（将特殊字符去掉）
-    :param input_string:
-    :return:
-    '''
-    strrr=ascii(input_string)
-    b=''
-    if 'U000' in strrr:
-        str_list = strrr.split('\'')[1].split('\\')
-        for x in str_list:
-            if 'U000' in x:
-                pass
-            elif not x:
-                pass
-            else:
-                a = '\\{}'.format(x)
-                b=b+a
-        final_str=b.encode('utf-8').decode('unicode_escape')
-        return final_str
-    elif 'u2005' in strrr:
-        str_list = strrr.split('\'')[1].split('\\')
-        for x in str_list:
-            if 'u2005' in x:
-                a = '\s'
-                b=b+a
-            elif not x:
-                pass
-            else:
-                a = '\\{}'.format(x)
-                b=b+a
-        final_str=b.encode('utf-8').decode('unicode_escape')
-        return final_str
-    else:
-        return input_string
-
 def send_message_chatroom_news(chat_room):
     '''
     定时任务
@@ -66,7 +31,7 @@ def send_message_chatroom_news(chat_room):
     qun_user_name=get_chatroom_username(chat_room)
     if qun_user_name:
         logger.info(qun_user_name)
-        message = get_weiyu_news_today()
+        message = weiyu_news_p_account()
         if not message:
             message='新闻又炸了！'
         logger.info(message)
@@ -142,7 +107,7 @@ def print_msg(msg):
     # logger.info(msg.text)
     if msg.text in news_keywords:
         logger.info('收到指令')
-        news=get_weiyu_news_today()
+        news=weiyu_news_p_account()
         if news:
             msg.user.send(news)
         else:
