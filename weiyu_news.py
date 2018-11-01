@@ -11,7 +11,34 @@ import time
 import requests
 import re
 
+def get_news_text(s,u):
+    '''
+    :param s: HTMLSession
+    :param u: 文章url
+    :return: 新闻文章内容
+    '''
+    news_compile=re.compile('(一份微语报，众览天下事！.*?)')
+    try:
+        news_text=''
+        rr = s.get(u)
+        # text_area=rr.html.find('#js_content')[0]
+        _news_text = rr.html.find('#js_content')[-1]
+        news_text_p=_news_text.find('p')
+        for p in news_text_p:
+            if p.text:
+                news_text+=f'{p.text}\n'
+        # '#js_content > section:nth-child(5) > p:nth-child(2)'
+        print('获取到：', news_text)
+        logger.info(news_text)
+        s.close()
+        return news_text
+    except Exception as e:
+        logger.info(e)
+        return
+
 def get_weiyu_news_today():
+    logger.info('get_weiyu_news_today')
+    print('get_weiyu_news_today')
     headers = {
         'Host': 'weixin.sogou.com',
         'Refer':'http://weixin.sogou.com/weixin?type=2&query=9%E6%9C%8827%E6%97%A5%E5%BE%AE%E8%AF%AD%E7%AE%80%E6%8A%A5+%E6%98%9F%E6%9C%9F%E5%9B%9B&ie=utf8&s_from=input&_sug_=n&_sug_type_=1&w=01015002&oq=&ri=11&sourceid=sugg&sut=0&sst0=1538010259311&lkt=0%2C0%2C0&p=40040108',
@@ -43,19 +70,8 @@ def get_weiyu_news_today():
         logger.info(f'{u},{author}{time_get.year,time_get.month,time_get.day}')
         if author == '微语简报'and today_str==time_get_date:
             # print('zhaodao')
-            rr=s.get(u)
-            # print(rr.html.html)
-            try:
-                # text_area=rr.html.find('#js_content')[0]
-                news_text=rr.html.find('#js_content > section')[-1].text
-                # '#js_content > section:nth-child(5) > p:nth-child(2)'
-                print('获取到：',news_text)
-                logger.info(news_text)
-                s.close()
-                return news_text
-            except Exception as e:
-                logger.info(e)
-                pass
+            return get_news_text(s,u)
+
     s.close()
 
 def weiyu_news_p_account():
@@ -65,6 +81,8 @@ def weiyu_news_p_account():
     进入当天文章，获取文章text
     :return: 文章内容
     '''
+    logger.info('weiyu_news_p_account')
+    print('weiyu_news_p_account')
     url='http://weixin.sogou.com/weixin?type=1&s_from=input&query={}&ie=utf8&_sug_=n&_sug_type_='
     key_word='微语简报'
     #日期
@@ -108,6 +126,7 @@ def weiyu_news_p_account():
                         time_get = datetime.datetime.fromtimestamp(int(date_time))
                         time_get_date = f'{time_get.year}-{time_get.month}-{time_get.day}'
                         if time_get_date==today_str:
+                        # if time_get_date=='2018-10-29':
                             app_msg_ext_info = x.get('app_msg_ext_info')  # 文章的url、标题等，dict
                             url_head='http://mp.weixin.qq.com'
                             wenzhang_url=app_msg_ext_info.get('content_url')
@@ -121,16 +140,9 @@ def weiyu_news_p_account():
                             logger.info(wenzhang_url.replace('amp;', '')+wenzhang_title+time_get_date)
                             if '微语简报' in wenzhang_title:
                                 # return wenzhang_url.replace('amp;',''),wenzhang_title,time_get_date
-                                try:
-                                    rp=se.get(wenzhang_url.replace('amp;',''))
-                                    news_text = rp.html.find('#js_content > section')[-1].text
-                                    print('获取到：', news_text)
-                                    logger.info(news_text)
-                                    se.close()
-                                    return news_text
-                                except Exception as e:
-                                    logger.info(e)
-                                    pass
+                                news_url=wenzhang_url.replace('amp;','')
+                                return get_news_text(se,news_url)
+    se.close()
 
 def get_lottery(lottery_id):
     api_url = 'http://apis.juhe.cn/lottery/query'
@@ -162,7 +174,6 @@ def get_lottery(lottery_id):
 
 def get_exp(com,no):
     '''
-
     :param com:
     :param no:
     :return:
@@ -202,4 +213,5 @@ def get_exp(com,no):
         return '未识别到快递公司，可能暂时不支持，也可能名称不匹配。'
 
 if __name__=='__main__':
-    print(get_exp("韵达",'3833224842423'))
+    # print(get_exp("韵达",'3833224842423'))
+    print(weiyu_news_p_account())
