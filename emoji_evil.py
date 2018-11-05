@@ -7,7 +7,7 @@
 from log import logger
 import chardet
 
-def unicode_nickname(input_string):
+def emoji_evil(input_string):
     '''
     处理特殊表情或者字符的（将特殊字符去掉）
     将接收到的字符串转为ascii，去掉emoji中以U000开头的编码字符

@@ -13,7 +13,8 @@ from weiyu_news import *
 from log import logger
 import re
 from daydayup import *
-from emoji_evil import unicode_nickname
+from emoji_evil import emoji_evil
+from juhe_interface import *
 
 yun=itchat.new_instance()
 def get_chatroom_username(room_name):
@@ -31,7 +32,8 @@ def send_message_chatroom_news(chat_room):
     qun_user_name=get_chatroom_username(chat_room)
     if qun_user_name:
         logger.info(qun_user_name)
-        message = weiyu_news_p_account() if weiyu_news_p_account() else get_weiyu_news_today()
+        _message = weiyu_news_p_account()
+        message = _message if _message else get_weiyu_news_today()
         if not message:
             message='新闻信息获取异常！'
         logger.info(message)
@@ -95,21 +97,27 @@ def print_msg(msg):
     lottery_keywords = {'彩票': 'ssq', '双色球': 'ssq', '大乐透': 'dlt'}
     exp_keywords = '查快递'
     try:
-        logger.info(unicode_nickname(msg['User']['NickName']))
+        logger.info(emoji_evil(msg['User']['NickName']))
     except Exception as e:
         logger.info(e)
     logger.info(msg.type)
     logger.info(msg['MsgType'])
     try:
-        logger.info('{}:{}'.format(unicode_nickname(msg['ActualNickName']),unicode_nickname(msg.content)))
+        logger.info('{}:{}'.format(emoji_evil(msg['ActualNickName']), emoji_evil(msg.content)))
     except Exception as e:
         logger.info(e)
     # logger.info(msg.text)
     if msg.text in news_keywords:
         logger.info('收到指令')
-        news=weiyu_news_p_account() if weiyu_news_p_account() else get_weiyu_news_today()
+        acount_news=weiyu_news_p_account()
+        news=acount_news if acount_news else get_weiyu_news_today()
         if news:
-            msg.user.send(news)
+            if news.endswith('.jpg'):
+                print('发图片')
+                msg.user.send(f'@img@{news}')
+            else:
+                print('发文字')
+                msg.user.send(news)
         else:
             msg.user.send('新闻信息获取异常。')
             logger.info('新闻信息获取异常。')

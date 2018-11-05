@@ -8,33 +8,76 @@ import datetime
 from requests_html import HTMLSession
 from log import logger
 import time
-import requests
 import re
+import urllib
+import os
 
-def get_news_text(s,u):
+def cbk(a, b, c):
+    '''
+    下载回调函数
+    :param a:
+    :param b:
+    :param c:
+    :return:
+    '''
+    per = 100.0 * a * b / c
+    if per > 100:
+        per = 100
+    print('%.2f%%' % per)
+
+def get_news_text(s,u,date_time):
     '''
     :param s: HTMLSession
     :param u: 文章url
     :return: 新闻文章内容
     '''
-    news_compile=re.compile('(一份微语报，众览天下事！.*?)')
-    try:
-        news_text=''
-        rr = s.get(u)
-        # text_area=rr.html.find('#js_content')[0]
-        _news_text = rr.html.find('#js_content')[-1]
-        news_text_p=_news_text.find('p')
-        for p in news_text_p:
-            if p.text:
-                news_text+=f'{p.text}\n'
-        # '#js_content > section:nth-child(5) > p:nth-child(2)'
-        print('获取到：', news_text)
-        logger.info(news_text)
-        s.close()
+    news_text_local=f'news/{date_time}.txt'
+    news_img_local=f'news/{date_time}.jpg'
+    if os.path.exists(news_text_local):
+        logger.info('存在文字版')
+        print('存在文字版')
+        with open(news_text_local,'r',encoding='utf8') as f:
+            news_text=f.read()
+            if news_text:
+                print('read news_text:',news_text)
+                return news_text
+    elif os.path.exists(news_img_local):
+        logger.info('存在图片版')
+        print('存在图片版')
+        news_text=news_img_local
         return news_text
-    except Exception as e:
-        logger.info(e)
-        return
+    else:
+        logger.info('本地没有新闻文件')
+        print('本地没有新闻文件')
+        try:
+            rr = s.get(u)
+            news_text = ''
+            _news_text = rr.html.find('#js_content')[-1]
+            print('_news_text',_news_text)
+            news_text_p=_news_text.find('p')
+            for p in news_text_p:
+                if p.text:
+                    if not '就是微语简报。' in p.text:
+                        news_text+=f'{p.text}\n'
+            # '#js_content > section:nth-child(5) > p:nth-child(2)'
+            if news_text:
+                print('get news_text：',news_text)
+                with open(news_text_local, 'wt',encoding='utf8') as f:
+                    f.write(news_text)
+                print('获取到文字版：', news_text)
+                logger.info(news_text)
+            if news_text=='':
+                news_text_img=_news_text.find('p > img')[0]
+                print('news_text_img',news_text_img)
+                img_url=news_text_img.attrs['data-src']
+                urllib.request.urlretrieve(img_url, news_img_local, cbk)
+                print(f'获取到图片：{news_img_local}')
+                news_text=news_img_local
+            return news_text
+        except Exception as e:
+            print('Exception:',e)
+            logger.info(e)
+            return
 
 def get_weiyu_news_today():
     logger.info('get_weiyu_news_today')
@@ -70,7 +113,7 @@ def get_weiyu_news_today():
         logger.info(f'{u},{author}{time_get.year,time_get.month,time_get.day}')
         if author == '微语简报'and today_str==time_get_date:
             # print('zhaodao')
-            return get_news_text(s,u)
+            return get_news_text(s,u,today_str)
 
     s.close()
 
@@ -104,11 +147,14 @@ def weiyu_news_p_account():
         links=li.links
         #微信号
         logger.info(li.find('p.info')[0].text)
+        # print(li.find('p.info')[0].text,links)
         if li.find('p.info')[0].text=='微信号：weiyunews':
             for link in links:
+                print(link)
                 if link.startswith('http://mp.weixin.qq.com/profile?src=3'):
                     #公众号链接
                     logger.info(link)
+                    print(link,'对上了')
                     #请求公众号页面，进入到公众号所有文章的页面。
                     rp=se.get(link)
                     htmls=rp.html.html#文章html
@@ -119,7 +165,7 @@ def weiyu_news_p_account():
                     msg_list=eval(msg_list)
                     for x in msg_list.get('list'):
                         # print('↓↓↓'*8)
-                        # print(x)
+                        print('msg_list',x)
                         #先获取文章的通用信息，通过时间来判断是不是今天的文章
                         comm_msg_info=x.get('comm_msg_info')
                         date_time=comm_msg_info.get('datetime')
@@ -131,87 +177,23 @@ def weiyu_news_p_account():
                             url_head='http://mp.weixin.qq.com'
                             wenzhang_url=app_msg_ext_info.get('content_url')
                             wenzhang_title=app_msg_ext_info.get('title')
-                            if not wenzhang_url:
+                            if not '微语简报' in wenzhang_title:
                                 wenzhang_url=app_msg_ext_info.get('multi_app_msg_item_list')[0].get('content_url')
                                 wenzhang_title=app_msg_ext_info.get('multi_app_msg_item_list')[0].get('title')
-                            else:
-                                wenzhang_url=url_head+wenzhang_url
-                            print(wenzhang_url.replace('amp;',''),wenzhang_title,time_get_date)
+                            wenzhang_url = url_head + wenzhang_url
+                            print('文章的信息：',wenzhang_url.replace('amp;',''),wenzhang_title,time_get_date)
                             logger.info(wenzhang_url.replace('amp;', '')+wenzhang_title+time_get_date)
-                            if '微语简报' in wenzhang_title:
-                                # return wenzhang_url.replace('amp;',''),wenzhang_title,time_get_date
+                            if not url_head==wenzhang_url:
                                 news_url=wenzhang_url.replace('amp;','')
-                                return get_news_text(se,news_url)
+                                return get_news_text(se, news_url, today_str)
+                            else:
+                                return
+                        else:
+                            continue
     se.close()
 
-def get_lottery(lottery_id):
-    api_url = 'http://apis.juhe.cn/lottery/query'
-    data = {
-        'key': 'd7ce4c0b11f2a0d48a309df093d23412',
-        'lottery_id': lottery_id
-    }
-    a = requests.post(api_url, data)
-    d=a.json()
-    print(d)
-    print(type(d))
-    strs=''
-    if d.get('reason')=='查询成功':
-        result=d.get('result')
-        strs += f"第{result.get('lottery_no')}期 "
-        strs+=f"{result.get('lottery_name')}\n"
-        strs +=f"开奖号码：↓↓\n【{result.get('lottery_res')}】\n"
-        strs +=f"开奖日期：{result.get('lottery_date')}\n"
-        strs +=f"兑奖过期日期：{result.get('lottery_exdate')}\n"
-        strs +=f"本期销量：{result.get('lottery_sale_amount')}\n"
-        strs +=f"奖池滚存：{result.get('lottery_pool_amount')}\n"
-        prize=result.get('lottery_prize') #list
-        # strs+='==========\n'
-        if prize:
-            for pr in prize:
-                # strs+=f"{pr.get('prize_name')}{pr.get('prize_num')}注,单注:{pr.get('prize_amount')}元\n"
-                pass
-    return strs
 
-def get_exp(com,no):
-    '''
-    :param com:
-    :param no:
-    :return:
-    '''
-    exp_map={
-        "顺丰":"sf",
-        "申通":"sto",
-        "圆通":"yt",
-        "韵达":"yd",
-        "天天":"tt",
-        "EMS":"ems",
-        "中通":"zto",
-        "汇通":"ht",
-    }
-    com_cod=exp_map.get(com)
-    if com_cod:
-        api_url='http://v.juhe.cn/exp/index'
-        p={
-            'key':'58873cd58e4995104fcf3e402a141100',
-            'com':com_cod,
-            'no':no
-        }
-
-        strs=''
-        a=requests.post(api_url,p)
-        r=a.json()
-        # strs+=f"{r.get('reason')}:\n"
-        result=r.get('result')
-        strs+=f'{result.get("company")} '
-        strs +=f'{result.get("no")}\n'
-        print(f'{result.get("status")}')
-        exp_info=result.get('list')
-        for _exp_info in exp_info:
-            strs +=f"{_exp_info.get('datetime')},{_exp_info.get('remark')}\n"
-        return strs
-    else:
-        return '未识别到快递公司，可能暂时不支持，也可能名称不匹配。'
 
 if __name__=='__main__':
     # print(get_exp("韵达",'3833224842423'))
-    print(weiyu_news_p_account())
+    weiyu_news_p_account()
