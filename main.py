@@ -36,8 +36,14 @@ def send_message_chatroom_news(chat_room):
         message = _message if _message else get_weiyu_news_today()
         if not message:
             message='新闻信息获取异常！'
-        logger.info(message)
-        yun.send(message,toUserName=get_chatroom_username(chat_room))
+            logger.info(message)
+            yun.send(message, toUserName=get_chatroom_username(chat_room))
+        elif message.endswith('.jpg'):
+            logger.info(message)
+            yun.send(f'@img@{message}', toUserName=get_chatroom_username(chat_room))
+        else:
+            logger.info(message)
+            yun.send(message,toUserName=get_chatroom_username(chat_room))
     else:
         logger.info(f'未获取到群username:{chat_room}')
 
