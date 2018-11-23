@@ -61,6 +61,9 @@ def get_news_text(s,u,date_time):
                         news_text+=f'{p.text}\n'
             # '#js_content > section:nth-child(5) > p:nth-child(2)'
             if news_text:
+                news_compile = re.compile(r'.*\n+')
+                a = news_compile.findall(news_text)
+                news_text = ''.join(a[:15])
                 print('get news_text：',news_text)
                 with open(news_text_local, 'wt',encoding='utf8') as f:
                     f.write(news_text)
