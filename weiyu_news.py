@@ -63,7 +63,14 @@ def get_news_text(s,u,date_time):
             if news_text:
                 news_compile = re.compile(r'.*\n+')
                 a = news_compile.findall(news_text)
-                news_text = ''.join(a[:15])
+                all_text=list(a)
+                tag='一份微语报'
+                _idx=1
+                for idx,v in enumerate(all_text):
+                    if tag in v:
+                        _idx=idx
+                news_slice=slice(_idx-1,_idx+14)
+                news_text=''.join(all_text[news_slice])
                 print('get news_text：',news_text)
                 with open(news_text_local, 'wt',encoding='utf8') as f:
                     f.write(news_text)

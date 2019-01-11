@@ -20,8 +20,15 @@ class JuHeApi():
         a = func(self.api_url, self.api_para)
         d = a.json()
         return d
+    def parase_rsp(self,api_json):
+        status=api_json.get('reason')
+        result = api_json.get('result')
 
 def get_wenxin_news():
+    '''
+    聚合api获取新闻
+    :return:
+    '''
     api_url='http://v.juhe.cn/weixin/query'
     method='POST'
     para={
@@ -118,5 +125,28 @@ def get_exp(com,no):
     else:
         return '未识别到快递公司，可能暂时不支持，也可能名称不匹配。'
 
+def get_weather(cityname):
+    api_url='http://v.juhe.cn/weather/index'
+    para={
+        'key':'2658deba9d1722c5b95c6bb4c35fedee',
+        'cityname':cityname
+    }
+    method='get'
+    weather = JuHeApi(api_url, para)
+    rsp_json_dict = weather.request_api(method)
+    status = rsp_json_dict.get('resultcode')
+    print(status)
+    result = rsp_json_dict.get('result')
+    # print(result)
+    sk=result.get('sk')
+    for key,value in sk.items():
+        print(key,':',value)
+    print('---'*9)
+    today=result.get('today')
+    for key,value in today.items():
+        print(key, ':', value)
+    print('---'*9)
+
+
 if __name__=='__main__':
-    get_wenxin_news()
+    get_weather('长沙')

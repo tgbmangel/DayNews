@@ -96,7 +96,6 @@ def send_message_chatroom_para(chat_room,message):
     else:
         logger.info(f'未获取到群username:{chat_room}')
 
-
 @yun.msg_register([TEXT,SHARING,CARD],isGroupChat=True)
 def print_msg(msg):
     news_keywords = ['新闻呢', '新闻呢？', '新闻']

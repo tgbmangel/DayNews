@@ -7,6 +7,7 @@
 import logging
 import logging.handlers
 import datetime
+from functools import wraps
 logger = logging.getLogger(__name__)
 logger.setLevel(level = logging.DEBUG)
 # handler = logging.FileHandler("logs/news.log",encoding='utf-8')
@@ -25,3 +26,12 @@ stream_handler=logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.addHandler(stream_handler)
+
+def logger_func(fn):
+    @wraps(fn)
+    def _wapper(*args,**kwargs):
+        logger.info(f"[record_func]:{fn.__name__}(),para:{args},kwpara:{kwargs},run...")
+        func = fn(*args,**kwargs)
+        logger.info(f"[record_func]:{fn.__name__}() done...")
+        return func
+    return _wapper

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Project : DayNews 
 # @Time    : 2018/10/26 16:33
-# @Author  : 
+# @Author  : zsr
 # @File    : emoji_evil.py
 # @Software: PyCharm
 from log import logger
@@ -24,7 +24,7 @@ def emoji_evil(input_string):
     :return:
     '''
     ascii_code=ascii(input_string)
-    logger.info(f'unicode_nickname ascii_code：{ascii_code}')
+    logger.info(f'emoji_evil ascii_code：{ascii_code}')
     _tmp_str=''
     if 'U000' in ascii_code:
         ascii_str_list = ascii_code.split('\'')[1].split('\\')
@@ -36,10 +36,10 @@ def emoji_evil(input_string):
             else:
                 a = '\\{}'.format(x)
                 _tmp_str=_tmp_str+a
-        logger.info(f'unicode_nickname _tmp_str：{_tmp_str}')
-        logger.info(f'unicode_nickname _tmp_str.encode("utf-8")：{_tmp_str.encode("utf-8")}')
+        logger.info(f'emoji_evil _tmp_str：{_tmp_str}')
+        logger.info(f'emoji_evil _tmp_str.encode("utf-8")：{_tmp_str.encode("utf-8")}')
         final_str=_tmp_str.encode('utf-8').decode('unicode_escape')
-        logger.info(f'unicode_nickname 转为final_str：{final_str}')
+        logger.info(f'emoji_evil 转为final_str：{final_str}')
         return final_str
     elif 'u2005' in ascii_code:
         ascii_str_list = ascii_code.split('\'')[1].split('\\')
@@ -53,8 +53,8 @@ def emoji_evil(input_string):
                 a = '\\{}'.format(x)
                 _tmp_str=_tmp_str+a
         final_str=_tmp_str.encode('utf-8').decode('unicode_escape')
-        logger.info(f'unicode_nickname 转为：{final_str}')
+        logger.info(f'emoji_evil 转为：{final_str}')
         return final_str
     else:
-        logger.info(f'unicode_nickname 未转：{input_string}')
+        logger.info(f'emoji_evil 未转：{input_string}')
         return input_string
